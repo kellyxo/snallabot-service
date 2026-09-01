@@ -37,6 +37,7 @@ import {
   InteractionResponseType,
   RESTPostAPIApplicationCommandsJSONBody,
 } from "discord-api-types/v10";
+import { error } from "console";
 
 const TEAM_A_PLAYER_OPTIONS = [
   "team_a_player_1",
@@ -153,7 +154,7 @@ async function playerChoices(query: string, leagueId: string, teamId?: number) {
       ...player,
       teamAbbr:
         player.teamId === "0"
-          ? "FA"
+          ? "" 
           : teams.getTeamForId(Number(player.teamId)).abbrName,
     }));
   return fuzzysort
