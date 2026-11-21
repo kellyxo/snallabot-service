@@ -3,9 +3,10 @@ import { DiscordClient, deferMessage, getTeamEmoji, SnallabotTeamEmojis, NoConne
 import { APIApplicationCommandInteractionDataBooleanOption, APIApplicationCommandInteractionDataStringOption, APIApplicationCommandInteractionDataSubcommandOption, APIMessageStringSelectInteractionData, ApplicationCommandOptionType, ButtonStyle, ComponentType, InteractionResponseType, RESTPostAPIApplicationCommandsJSONBody, SeparatorSpacingSize } from "discord-api-types/v10"
 import { discordLeagueView, LeagueLogos, leagueLogosView } from "../../db/view"
 import fuzzysort from "fuzzysort"
-import MaddenDB, { PlayerListQuery, PlayerStatType, PlayerStats, TeamList, createPlayerKey } from "../../db/madden_db"
+import MaddenDB, { PlayerListQuery, PlayerStatType, PlayerStats } from "../../db/madden_db"
 import { DevTrait, LBStyleTrait, MADDEN_SEASON, MaddenGame, POSITIONS, POSITION_GROUP, PlayBallTrait, Player, QBStyleTrait, SensePressureTrait, YesNoTrait } from "../../export/madden_league_types"
 import LeagueSettingsDB, { PlayerConfiguration } from "../settings_db"
+import type { TeamList } from "../../db/teams"
 
 enum PlayerSelection {
   PLAYER_OVERVIEW = "po",
@@ -165,6 +166,15 @@ export async function showPlayerCard(
 
     await client.editOriginalInteraction(token, payload);
   } catch (error) {
+    await client.editOriginalInteraction(token, {
+      flags: 32768,
+      components: [
+        {
+          type: ComponentType.TextDisplay,
+          content: `${error}`
+        }
+      ]
+    })
   }
 }
 async function showPlayerFullRatings(rosterId: number, client: DiscordClient, token: string, guild_id: string, pagination?: PlayerPagination) {
@@ -1583,7 +1593,6 @@ async function searchPlayerForRosterId(query: string, leagueId: string): Promise
     keys: ["firstName", "lastName", "position", "teamAbbr"], threshold: 0.4, limit: 25
   })
   return results.map(r => r.obj)
-  return []
 }
 const positions = POSITIONS.concat(POSITION_GROUP).map(p => ({ teamDisplayName: "", teamId: -1, teamNickName: "", position: p, rookie: "", retired: "" }))
 const rookies = [{
